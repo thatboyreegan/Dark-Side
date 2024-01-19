@@ -1,14 +1,21 @@
-import { createContext, useState, useEffect } from "react";
+import { createContext, useState, useEffect, useCallback } from "react";
 import { getRequest, baseUrl, postRequest } from "../utils/services";
-import { create } from "../../../server/models/messageModel";
+
 
 
 export const chatContext = createContext();
+
 export const chatContextProvider = ({children, user}) => {
     const [userChats, setUserChats] = useState(null);
     const [isUserChatsLoading, setIsUserChatsLoading] = useState(false);
     const [userChatsError, setUserChatsError] = useState(null);
-    const [potentialChats, setPotentialChats] = useState([])
+    const [potentialChats, setPotentialChats] = useState([]);
+    const [currentChat, setCurrentChat] = useState(null);
+    const [messages, setMessages] = useState(null);
+    const [isMessagesLoading, setIsMessagesLoading] = useState(false);
+    const [messagesError, setMessagesError] = useState(null);
+    const [sendTextMessageError, setSendTextMessageError] = useState(null);
+    const [newMessage, setNewMessage] = useState(null)
 
     useEffect(() => {
         const getUsers = async () => {
@@ -20,7 +27,7 @@ export const chatContextProvider = ({children, user}) => {
 
             const pChats = res.filter((u) => {
                 let isChatCreated = false;
-                if (user._id === u._id) return false;
+                if (user?._id === u._id) return false;
 
                 if (userChats) {
                     isChatCreated = userChats?.some((chat) => {
@@ -33,6 +40,7 @@ export const chatContextProvider = ({children, user}) => {
             })
             setPotentialChats(pChats)
         }
+        getUsers()
     }, [userChats])
 
     useEffect(() => {
@@ -51,14 +59,69 @@ export const chatContextProvider = ({children, user}) => {
                 setUserChats(res);
             }
         }
+        getUserChats()
+    }, [user]);
+
+    useEffect(() => {
+        const getMessages = async () => {
+        
+            setIsMessagesLoading(true);
+            setMessagesError(null);
+            const res = await getRequest(`${baseUrl}/messages/${currentChat?._id}`);
+
+            setIsMessagesLoading(false);
+
+            if(res.error){
+                return setMessagesError(res)
+            }
+
+            setMessages(res);
+    
+        }
+        getMessages()
+    }, [user]);
+
+    const sendTextMessage = useCallback( async (textMessage, sender, currentChatId, setTextMessage) => {
+        if (!text) return console.log("You have to type something");
+        const res = await postRequest(`${baseUrl}/messages`, JSON.stringify({
+            chatId: currentChatId,
+            sender: sender._id,
+            text: textMessage,
+        }))
+
+        if(res.error){
+            return setSendTextMessageError(res)
+        }
+        setNewMessage(res);
+        setMessages((prev) => [...prev, res])
+        setTextMessage("");
     }, [])
+    const updateCurrentChat = useCallback((chat) => {
+        setCurrentChat(chat)
+    }, [])
+
+    const createChat = useCallback( async (firstId, secondId)=> {
+        const res = await postRequest(`${baseUrl}/chats/`, JSON.stringify({firstId, secondId}))
+
+        if(res.error) {
+            return console.log('Error creating chat', res)
+        }
+
+        setUserChats((prev) => [...prev, res])
+    },[])
     return (
-        <chatContext.Provider value={{
+        <ChatContext.Provider value={{
             userChats,
             isUserChatsLoading,
             userChatsError,
             potentialChats,
-            createChats
-        }}>{children}</chatContext.Provider>
+            createChat,
+            updateCurrentChat,
+            messages,
+            isMessagesLoading,
+            messagesError,
+            currentChat,
+            sendTextMessage
+        }}>{children}</ChatContext.Provider>
     )
 }

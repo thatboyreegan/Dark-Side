@@ -6,13 +6,12 @@ const potentialChats = () => {
     const {user} = useContext(AuthContext  )
     const { potentialChats, createChat } = useContext(chatContext);
 
-    console.log('pchats', potentialChats)
     return (
         <>
             <div className="all-users">{
             potentialChats && potentialChats.map((u, index) => {
                 return (
-                    <div className="single-user" key={index} onClick={() => createChat()}>
+                    <div className="single-user" key={index} onClick={() => createChat(user._id, u._id)}>
                         {u.name}
                         <span className="user-online"></span>
                     </div>

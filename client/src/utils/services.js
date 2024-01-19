@@ -1,10 +1,16 @@
 export const baseUrl = 'http://localhost:5000/api'
 
+/**
+ * 
+ * @param {*} url 
+ * @returns 
+ */
 export const postRequest = async (url, body) => {
     const res = await fetch(url, {
         method: 'POST',
         headers: {
-            'content-type': 'application/json'
+            'content-type': 'application/json',
+            'mode': 'cors'
         },
         body
     })
@@ -23,7 +29,11 @@ export const postRequest = async (url, body) => {
     }
     return data
 }
-
+/**
+ * 
+ * @param {*} url 
+ * @returns 
+ */
 export const getRequest = async (url) => {
     const res = await fetch(url);
 

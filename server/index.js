@@ -1,6 +1,5 @@
 
-const express = require('express')
-const cors = require('cors');
+const express = require('express');
 const { mongoose} = require('mongoose');
 const userRoute = require('./routes/userRoutes')
 const chatRoute = require('./routes/chatRoute')

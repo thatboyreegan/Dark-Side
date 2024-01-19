@@ -18,7 +18,7 @@ const NavBar = () => {
                 <Stack direction="horizontal" gap={4}>
                 {
                     user && (<>
-                        <Link onClick={() => logoutUser}to='/login' className="link-light text-decoration-none">LogOut</Link>
+                        <Link onClick={() => logoutUser} to='/login' className="link-light text-decoration-none">LogOut</Link>
                     </>)
                 }
 
